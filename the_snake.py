@@ -116,9 +116,6 @@ class Snake(GameObject):
     def __init__(self):
         """Инициализация Snake"""
         super().__init__()
-        self.body_color = SNAKE_COLOR
-        self.direction = RIGHT
-        self.last = None
         self.reset()
 
     def update_direction(self, new_direction):
@@ -139,10 +136,7 @@ class Snake(GameObject):
             for coordinates_x, coordinates_y in self.positions
         ]
 
-        if len(self.positions) > self.length:
-            self.last = self.positions.pop()
-        else:
-            self.last = None
+        self.last = self.positions.pop() if len(self.positions) > self.length else None
 
     def draw(self):
         """Метод для отрисовки змейки"""
@@ -160,6 +154,8 @@ class Snake(GameObject):
     def reset(self):
         """Сбрасывает змейку в начальное состояние"""
         self.positions = [self.position]
+        self.body_color = SNAKE_COLOR
+        self.last = None
         self.length = 1
         self.direction = choice(DIRECTION)
         screen.fill((BOARD_BACKGROUND_COLOR))
