@@ -85,7 +85,8 @@ class Apple(GameObject):
     и его отрисовку на игровом поле
     """
 
-    def __init__(self, position_snake):
+    def __init__(self, position_snake=(
+            HALF_GRID_WIDTH * GRID_SIZE, HALF_GRID_HEIGHT * GRID_SIZE)):
         """Инициализация Apple"""
         super().__init__()
         self.body_color = APPLE_COLOR
