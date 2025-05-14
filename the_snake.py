@@ -136,7 +136,8 @@ class Snake(GameObject):
             for coordinates_x, coordinates_y in self.positions
         ]
 
-        self.last = self.positions.pop() if len(self.positions) > self.length else None
+        self.last = self.positions.pop() \
+            if len(self.positions) > self.length else None
 
     def draw(self):
         """Метод для отрисовки змейки"""
