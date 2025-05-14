@@ -85,11 +85,11 @@ class Apple(GameObject):
     и его отрисовку на игровом поле
     """
 
-    def __init__(self):
+    def __init__(self, position_snake):
         """Инициализация Apple"""
         super().__init__()
         self.body_color = APPLE_COLOR
-        self.position = self.randomize_position(self.position)
+        self.position = self.randomize_position(position_snake)
 
     def randomize_position(self, snake_current_position):
         """Определение позиции для Apple"""
@@ -180,7 +180,7 @@ def main():
     pygame.init()
     # Тут нужно создать экземпляры классов.
     snake = Snake()
-    apple = Apple()
+    apple = Apple(snake.position)
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
