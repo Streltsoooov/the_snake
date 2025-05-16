@@ -16,7 +16,6 @@ DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 DIRECTION = [UP, DOWN, LEFT, RIGHT]
-
 # Словарь изменения направления
 # Нажатая клавиша, старое направление -> Новое направление
 TURNS = {
@@ -58,7 +57,6 @@ pygame.display.set_caption('Змейка')
 clock = pygame.time.Clock()
 
 
-# Тут опишите все классы игры.
 class GameObject:
     """Базовый класс для объектов"""
 
