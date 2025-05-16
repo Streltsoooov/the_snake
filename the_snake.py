@@ -9,7 +9,7 @@ GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 HALF_GRID_WIDTH = GRID_WIDTH // 2
 HALF_GRID_HEIGHT = GRID_HEIGHT // 2
-
+CENTRE_SCREEN = HALF_GRID_WIDTH * GRID_SIZE, HALF_GRID_HEIGHT * GRID_SIZE
 # Направления движения:
 UP = (0, -1)
 DOWN = (0, 1)
@@ -42,6 +42,9 @@ APPLE_COLOR = (255, 0, 0)
 # Цвет змейки
 SNAKE_COLOR = (0, 255, 0)
 
+# Цвет камня
+STONE_COLOR = (128, 128, 128)
+
 # Скорость движения змейки:
 SPEED = 15
 
@@ -61,9 +64,7 @@ class GameObject:
 
     def __init__(self):
         """Метод для инициализации конкретного объекта"""
-        self.position = (
-            HALF_GRID_WIDTH * GRID_SIZE, HALF_GRID_HEIGHT * GRID_SIZE
-        )
+        self.position = CENTRE_SCREEN
         self.body_color = None
 
     def draw(self):
@@ -85,8 +86,7 @@ class Apple(GameObject):
     и его отрисовку на игровом поле
     """
 
-    def __init__(self, position_snake=(
-            HALF_GRID_WIDTH * GRID_SIZE, HALF_GRID_HEIGHT * GRID_SIZE)):
+    def __init__(self, position_snake=CENTRE_SCREEN):
         """Инициализация Apple"""
         super().__init__()
         self.body_color = APPLE_COLOR
@@ -163,6 +163,36 @@ class Snake(GameObject):
         screen.fill((BOARD_BACKGROUND_COLOR))
 
 
+class Stone(GameObject):
+    """Класс для камней
+    Включает в себя метод генерации камней,
+    отрисовку фигур на поле
+    """
+
+    def __init__(self, snake=CENTRE_SCREEN, apple=CENTRE_SCREEN):
+        super().__init__()
+        self.quantity = GRID_HEIGHT * GRID_WIDTH // 100
+        self.positions = self.random_pos_stone(snake, apple)
+        self.body_color = STONE_COLOR
+
+    def random_pos_stone(self, snake, apple):
+        """Установка рандомных координат с учетом координат яблока и змейки"""
+        position = []
+        for _ in range(self.quantity):
+            while True:
+                pos = randint(0, GRID_WIDTH - 1) * GRID_SIZE, \
+                    randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+                if pos not in snake and pos not in apple:
+                    position.append(pos)
+                    break
+        return position
+
+    def draw(self):
+        """Отрисовка камней на поле"""
+        for coordinate in self.positions:
+            self.draw_cell(coordinate, self.body_color)
+
+
 def handle_keys(game_object):
     """Функция обработки действий пользователя"""
     for event in pygame.event.get():
@@ -176,6 +206,48 @@ def handle_keys(game_object):
             ))
 
 
+def game_score(screen, count):
+    """Функция для отображения счета"""
+    text = pygame.font.Font(None, 28)
+    window = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    window.fill((255, 0, 0, 210))
+    if count < 7:
+        score = text.render(f"ВЫ СЛАБАК, ваш счет: {count}", True,
+                            (255, 255, 255))
+    elif count < 12:
+        score = text.render(f"ВЫ хороший игрок, ваш счет: {count}", True,
+                            (255, 255, 255))
+    else:
+        score = text.render(f"Вы профи, ваш счет: {count}", True,
+                            (255, 255, 255))
+    screen.blit(window, (0, 0))
+    screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2,
+                        SCREEN_HEIGHT // 2))
+
+    pygame.display.flip()
+    status = True
+    while status:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.KEYDOWN:
+                status = False
+
+
+def restart(snake_object, apple_object, stone_object, count):
+    """Функция перезпуска игры"""
+    game_score(screen, count)
+    snake_object.reset()
+    apple_object.position = apple_object.randomize_position(
+        snake_object.positions
+    )
+    stone_object.positions = stone_object.random_pos_stone(
+        snake_object.positions, apple_object.position
+    )
+    stone_object.draw()
+
+
 def main():
     """Тело игры"""
     # Инициализация PyGame:
@@ -183,18 +255,22 @@ def main():
     # Тут нужно создать экземпляры классов.
     snake = Snake()
     apple = Apple(snake.position)
+    stone = Stone(snake.position, apple.position)
+    stone.draw()
+    count = 0
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
         snake.move()
-        #  Проверка на врезание
-        if len(snake.positions) != len(set(snake.positions)):
-            snake.reset()
-            apple.draw_cell(apple.position, BOARD_BACKGROUND_COLOR)
-            apple.position = apple.randomize_position(snake.positions)
+        #  Проверка на врезание в змейку и камень
+        if len(snake.positions) != len(set(snake.positions)) or \
+                snake.get_head_position() in stone.positions:
+            restart(snake, apple, stone, count)
+            count = 0
         #  Проверка на поедание яблока
         if snake.get_head_position() == apple.position:
             snake.length += 1
+            count += 1
             apple.position = apple.randomize_position(snake.positions)
         apple.draw()
         snake.draw()
