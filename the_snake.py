@@ -210,13 +210,13 @@ def game_score(screen, count):
     window = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
     window.fill((255, 0, 0, 210))
     if count < 7:
-        score = text.render(f"ВЫ СЛАБАК, ваш счет: {count}", True,
+        score = text.render(f'ВЫ СЛАБАК, ваш счет: {count}', True,
                             (255, 255, 255))
     elif count < 12:
-        score = text.render(f"ВЫ хороший игрок, ваш счет: {count}", True,
+        score = text.render(f'ВЫ хороший игрок, ваш счет: {count}', True,
                             (255, 255, 255))
     else:
-        score = text.render(f"Вы профи, ваш счет: {count}", True,
+        score = text.render(f'Вы профи, ваш счет: {count}', True,
                             (255, 255, 255))
     screen.blit(window, (0, 0))
     screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2,
