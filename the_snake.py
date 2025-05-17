@@ -50,6 +50,15 @@ SPEED = 15
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
+# Цвет фонового окна:
+COLOR_WINDOW = (255, 0, 0, 210)
+
+# Цыет текста в окне:
+COLOR_TEXT = (255, 255, 255)
+
+# Стиль для текста
+text_size = 28
+
 # Заголовок окна игрового поля:
 pygame.display.set_caption('Змейка')
 
@@ -191,6 +200,45 @@ class Stone(GameObject):
             self.draw_cell(coordinate, self.body_color)
 
 
+class GameStat():
+    """Класс для окна статистики"""
+
+    def __init__(self, screen):
+        self.screen = screen
+        self.text = pygame.font.Font(None, text_size)
+        self.window = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),
+                                     pygame.SRCALPHA)
+
+    def output(self, count):
+        """Метод для отоброжения статистики"""
+        self.window.fill(COLOR_WINDOW)
+        if count < 7:
+            score = self.text.render(f'Попробуйте еще, ваш счет: {count}',
+                                     True, COLOR_TEXT)
+        elif count < 12:
+            score = self.text.render(f'ВЫ хороший игрок, ваш счет: {count}',
+                                     True, COLOR_TEXT)
+        else:
+            score = self.text.render(f'Вы профи, ваш счет: {count}',
+                                     True, COLOR_TEXT)
+        self.screen.blit(self.window, (0, 0))
+        self.screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2,
+                                 SCREEN_HEIGHT // 2))
+
+    @staticmethod
+    def click():
+        """Метод ожидает нажатие клавиши"""
+        pygame.display.update()
+        status = True
+        while status:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    raise SystemExit
+                if event.type == pygame.KEYDOWN:
+                    status = False
+
+
 def handle_keys(game_object):
     """Функция обработки действий пользователя"""
     for event in pygame.event.get():
@@ -204,38 +252,8 @@ def handle_keys(game_object):
             ))
 
 
-def game_score(screen, count):
-    """Функция для отображения счета"""
-    text = pygame.font.Font(None, 28)
-    window = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-    window.fill((255, 0, 0, 210))
-    if count < 7:
-        score = text.render(f'ВЫ СЛАБАК, ваш счет: {count}', True,
-                            (255, 255, 255))
-    elif count < 12:
-        score = text.render(f'ВЫ хороший игрок, ваш счет: {count}', True,
-                            (255, 255, 255))
-    else:
-        score = text.render(f'Вы профи, ваш счет: {count}', True,
-                            (255, 255, 255))
-    screen.blit(window, (0, 0))
-    screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2,
-                        SCREEN_HEIGHT // 2))
-
-    pygame.display.flip()
-    status = True
-    while status:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                raise SystemExit
-            if event.type == pygame.KEYDOWN:
-                status = False
-
-
-def restart(snake_object, apple_object, stone_object, count):
+def restart(snake_object, apple_object, stone_object):
     """Функция перезпуска игры"""
-    game_score(screen, count)
     snake_object.reset()
     apple_object.position = apple_object.randomize_position(
         snake_object.positions
@@ -251,11 +269,12 @@ def main():
     # Инициализация PyGame:
     pygame.init()
     # Тут нужно создать экземпляры классов.
+    count = 0
     snake = Snake()
     apple = Apple(snake.position)
     stone = Stone(snake.position, apple.position)
+    game = GameStat(screen)
     stone.draw()
-    count = 0
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
@@ -263,7 +282,9 @@ def main():
         #  Проверка на врезание в змейку и камень
         if len(snake.positions) != len(set(snake.positions)) or \
                 snake.get_head_position() in stone.positions:
-            restart(snake, apple, stone, count)
+            game.output(count)
+            game.click()
+            restart(snake, apple, stone)
             count = 0
         #  Проверка на поедание яблока
         if snake.get_head_position() == apple.position:
