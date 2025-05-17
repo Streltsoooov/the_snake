@@ -224,6 +224,7 @@ class GameStat():
         self.screen.blit(self.window, (0, 0))
         self.screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2,
                                  SCREEN_HEIGHT // 2))
+        self.click()
 
     @staticmethod
     def click():
@@ -283,7 +284,6 @@ def main():
         if len(snake.positions) != len(set(snake.positions)) or \
                 snake.get_head_position() in stone.positions:
             game.output(count)
-            game.click()
             restart(snake, apple, stone)
             count = 0
         #  Проверка на поедание яблока
